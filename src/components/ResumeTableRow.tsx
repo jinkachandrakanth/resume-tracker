@@ -1,9 +1,10 @@
+
 "use client";
 
 import React from "react";
 import { format } from "date-fns";
 import { FilePenLine, Trash2, Eye, MoreVertical } from "lucide-react";
-import { cn } from "@/lib/utils"; // Added this import
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -51,21 +52,21 @@ export function ResumeTableRow({
           </TableCell>
         )}
          {isMobileView && <div className="w-8"> {/* Spacer for mobile checkbox alignment */} </div>}
-        <div className="flex-grow">
+        <div className="flex-grow min-w-0"> {/* Added min-w-0 here to help with truncation */}
           <div className={isMobileView ? "mb-1" : ""}>
             {isMobileView && <span className="font-semibold mr-2">Company:</span>}
             <span className={isMobileView ? "" : "font-medium"}>{entry.companyName}</span>
           </div>
 
-          <div className={isMobileView ? "mb-1 flex items-center" : "flex items-center"}>
+          <div className={cn("flex items-center", isMobileView ? "mb-1" : "")}>
             {isMobileView && <span className="font-semibold mr-2 shrink-0">Resume Link:</span>}
             <a
               href={entry.resumeLink}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                "text-primary hover:underline truncate break-all",
-                isMobileView ? "min-w-0" : "max-w-[200px] inline-block"
+                "text-primary hover:underline truncate", // Removed break-all, rely on truncate and overflow hidden of parent
+                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block" // flex-1 for mobile to take available space
               )}
             >
               {entry.resumeLink}
@@ -153,7 +154,7 @@ export function ResumeTableRow({
           className="mr-3 mt-1 shrink-0"
           id={`checkbox-${entry.id}`}
         />
-        <div className="flex-grow">
+        <div className="flex-grow min-w-0"> {/* Added min-w-0 here as well */}
           {commonContent}
         </div>
         <div className="ml-auto shrink-0">
@@ -167,12 +168,12 @@ export function ResumeTableRow({
     <TableRow key={entry.id} data-state={isSelected ? "selected" : undefined}>
       {/* Checkbox is now part of commonContent for TableCell structure */}
       <TableCell className="font-medium hidden md:table-cell w-[200px]">{entry.companyName}</TableCell>
-      <TableCell className="hidden md:table-cell">
+      <TableCell className="hidden md:table-cell max-w-[200px]"> {/* Ensure max-width for desktop link cell */}
         <a
           href={entry.resumeLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline truncate max-w-[200px] inline-block"
+          className="text-primary hover:underline truncate inline-block" // Removed max-w-[200px] from here, relying on cell's max-width
         >
           {entry.resumeLink}
         </a>
@@ -200,3 +201,4 @@ export function ResumeTableRow({
     </TableRow>
   );
 }
+
