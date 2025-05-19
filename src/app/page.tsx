@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -12,7 +13,6 @@ import { ResumeForm } from "@/components/ResumeForm";
 import { ResumeTable } from "@/components/ResumeTable";
 import type { ResumeEntry, ResumeFormData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-// Removed: import { validateResumeLink } from '@/ai/flows/validate-resume-link';
 import { Checkbox } from "@/components/ui/checkbox"; // For bulk delete
 
 export default function ResuTrackPage() {
@@ -28,10 +28,14 @@ export default function ResuTrackPage() {
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      if (document.documentElement.classList.contains('dark')) {
+      const storedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
         setCurrentTheme('dark');
+        document.documentElement.classList.add('dark');
       } else {
         setCurrentTheme('light');
+        document.documentElement.classList.remove('dark');
       }
     }
   }, []);
@@ -103,7 +107,7 @@ export default function ResuTrackPage() {
   const confirmDelete = () => {
     if (entryToDelete) {
       setResumeEntries(resumeEntries.filter((e) => e.id !== entryToDelete.id));
-      toast({ title: "Deleted", description: "Resume entry removed." });
+      toast({ variant: "destructive", title: "Deleted", description: "Resume entry removed." });
       setEntryToDelete(undefined);
     }
   };
@@ -137,7 +141,11 @@ export default function ResuTrackPage() {
     setResumeEntries(prevEntries =>
       prevEntries.filter(entry => !selectedEntryIds.includes(entry.id))
     );
-    toast({ title: "Deleted", description: `${selectedEntryIds.length} resume entr${selectedEntryIds.length === 1 ? 'y' : 'ies'} removed.` });
+    toast({ 
+      variant: "destructive", 
+      title: "Deleted Selected", 
+      description: `${selectedEntryIds.length} resume entr${selectedEntryIds.length === 1 ? 'y' : 'ies'} removed.` 
+    });
     setSelectedEntryIds([]);
   };
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -56,10 +57,9 @@ export function ResumeTable({
               />
             </TableHead>
             <TableHead className="w-[200px]">Company</TableHead>
-            <TableHead>Resume Link</TableHead>
+            <TableHead className="w-[250px]">Resume Link</TableHead> {/* Adjusted width for better truncation */}
             <TableHead className="w-[150px]">Date</TableHead>
             <TableHead className="w-[120px]">Stipend (INR)</TableHead>
-            {/* Validation Status column removed */}
             <TableHead className="text-right w-[180px]">Actions</TableHead> 
           </TableRow>
         </TableHeader>
