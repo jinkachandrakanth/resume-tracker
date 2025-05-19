@@ -39,7 +39,7 @@ export function ResumeTableRow({
   onSelectEntry,
 }: ResumeTableRowProps) {
 
-  const commonContentForMobile = ( // Renamed to be specific for mobile, desktop is structured directly
+  const commonContentForMobile = (
     <>
       <div className={cn("flex items-center", isMobileView ? "mb-2" : "")}>
          {isMobileView && <div className="w-8"> {/* Spacer for mobile checkbox alignment */} </div>}
@@ -166,7 +166,7 @@ export function ResumeTableRow({
         />
       </TableCell>
       <TableCell className="font-medium w-[200px]">{entry.companyName}</TableCell>
-      <TableCell className="max-w-[250px]"> {/* Adjusted to match header spec if it was 250px */}
+      <TableCell className="max-w-[250px] overflow-hidden"> {/* Added overflow-hidden */}
         <a
           href={entry.resumeLink}
           target="_blank"
