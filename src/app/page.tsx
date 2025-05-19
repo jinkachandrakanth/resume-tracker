@@ -158,11 +158,6 @@ export default function ResuTrackPage() {
             <h1 className="text-2xl font-bold">ResuTrack</h1>
           </div>
           <div className="flex items-center gap-4">
-            {selectedEntryIds.length > 0 && (
-              <Button variant="destructive" onClick={handleDeleteSelected}>
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedEntryIds.length})
-              </Button>
-            )}
             <Button onClick={toggleTheme} variant="outline" size="icon" aria-label="Toggle theme">
               {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
             </Button>
@@ -212,6 +207,14 @@ export default function ResuTrackPage() {
           </CardContent>
         </Card>
       </main>
+
+      {selectedEntryIds.length > 0 && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button variant="destructive" onClick={handleDeleteSelected} size="lg" className="shadow-lg">
+            <Trash2 className="mr-2 h-5 w-5" /> Delete Selected ({selectedEntryIds.length})
+          </Button>
+        </div>
+      )}
 
       <AlertDialog open={!!entryToDelete} onOpenChange={(open) => !open && setEntryToDelete(undefined)}>
         <AlertDialogContent>
