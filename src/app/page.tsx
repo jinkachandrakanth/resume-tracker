@@ -1,3 +1,190 @@
-export default function Home() {
-  return <></>;
+"use client";
+
+import * as React from "react";
+import { PlusCircle } from "lucide-react";
+import { AppLogo } from "@/components/icons/AppLogo";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ResumeForm } from "@/components/ResumeForm";
+import { ResumeTable } from "@/components/ResumeTable";
+import type { ResumeEntry, ResumeFormData } from "@/types";
+import { useToast } from "@/hooks/use-toast";
+import { validateResumeLink } from '@/ai/flows/validate-resume-link';
+
+export default function ResuTrackPage() {
+  const [resumeEntries, setResumeEntries] = React.useState<ResumeEntry[]>([]);
+  const [isFormOpen, setIsFormOpen] = React.useState(false);
+  const [editingEntry, setEditingEntry] = React.useState<ResumeEntry | undefined>(undefined);
+  const [entryToDelete, setEntryToDelete] = React.useState<ResumeEntry | undefined>(undefined);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { toast } = useToast();
+
+  // Load entries from localStorage on mount
+  React.useEffect(() => {
+    const storedEntries = localStorage.getItem("resumeEntries");
+    if (storedEntries) {
+      try {
+        const parsedEntries = JSON.parse(storedEntries) as ResumeEntry[];
+        // Ensure dates are Date objects
+        const correctedEntries = parsedEntries.map(entry => ({
+          ...entry,
+          registrationDate: new Date(entry.registrationDate)
+        }));
+        setResumeEntries(correctedEntries);
+      } catch (error) {
+        console.error("Failed to parse resume entries from localStorage", error);
+        setResumeEntries([]);
+      }
+    }
+  }, []);
+
+  // Save entries to localStorage whenever they change
+  React.useEffect(() => {
+    localStorage.setItem("resumeEntries", JSON.stringify(resumeEntries));
+  }, [resumeEntries]);
+
+
+  const handleFormSubmit = (data: ResumeFormData) => {
+    setIsLoading(true);
+    if (editingEntry) {
+      // Edit existing entry
+      setResumeEntries(
+        resumeEntries.map((entry) =>
+          entry.id === editingEntry.id ? { ...editingEntry, ...data } : entry
+        )
+      );
+      toast({ title: "Success!", description: "Resume entry updated." });
+    } else {
+      // Add new entry
+      const newEntry: ResumeEntry = {
+        ...data,
+        id: crypto.randomUUID(),
+        validationStatus: 'pending',
+      };
+      setResumeEntries([newEntry, ...resumeEntries]);
+      toast({ title: "Success!", description: "New resume entry added." });
+    }
+    setIsLoading(false);
+    setIsFormOpen(false);
+    setEditingEntry(undefined);
+  };
+
+  const handleEdit = (entry: ResumeEntry) => {
+    setEditingEntry(entry);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (entry: ResumeEntry) => {
+    setEntryToDelete(entry);
+  };
+
+  const confirmDelete = () => {
+    if (entryToDelete) {
+      setResumeEntries(resumeEntries.filter((e) => e.id !== entryToDelete.id));
+      toast({ title: "Deleted", description: "Resume entry removed." });
+      setEntryToDelete(undefined);
+    }
+  };
+
+  const handleValidateLink = async (entryToValidate: ResumeEntry) => {
+    setResumeEntries(prev => prev.map(e => e.id === entryToValidate.id ? { ...e, validationStatus: 'validating' } : e));
+    try {
+      const result = await validateResumeLink({
+        resumeLink: entryToValidate.resumeLink,
+        companyName: entryToValidate.companyName,
+      });
+      setResumeEntries(prev => prev.map(e => e.id === entryToValidate.id ? {
+        ...e,
+        validationStatus: result.isValid ? 'valid' : 'invalid',
+        validationResult: result,
+      } : e));
+      toast({ title: "Validation Complete", description: `Link for ${entryToValidate.companyName} processed.` });
+    } catch (error) {
+      console.error("Failed to validate link:", error);
+      setResumeEntries(prev => prev.map(e => e.id === entryToValidate.id ? { ...e, validationStatus: 'error' } : e));
+      toast({ variant: "destructive", title: "Validation Error", description: "Could not validate the resume link." });
+    }
+  };
+
+  const openAddNewForm = () => {
+    setEditingEntry(undefined);
+    setIsFormOpen(true);
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+          <div className="flex items-center gap-2">
+            <AppLogo className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl font-bold">ResuTrack</h1>
+          </div>
+          <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) setEditingEntry(undefined); }}>
+            <DialogTrigger asChild>
+              <Button onClick={openAddNewForm}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add New Entry
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[625px]">
+              <DialogHeader>
+                <DialogTitle>{editingEntry ? "Edit" : "Add New"} Resume Entry</DialogTitle>
+                <DialogDescription>
+                  {editingEntry ? "Update the details of your resume submission." : "Fill in the details of your new resume submission."}
+                </DialogDescription>
+              </DialogHeader>
+              <ResumeForm
+                onSubmit={handleFormSubmit}
+                initialData={editingEntry}
+                isEditing={!!editingEntry}
+                isLoading={isLoading}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      </header>
+
+      <main className="container mx-auto p-4 md:p-6">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-xl">Your Resume Submissions</CardTitle>
+            <CardDescription>
+              Track, manage, and validate your job applications all in one place.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResumeTable
+              entries={resumeEntries}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onValidateLink={handleValidateLink}
+            />
+          </CardContent>
+        </Card>
+      </main>
+
+      <AlertDialog open={!!entryToDelete} onOpenChange={(open) => !open && setEntryToDelete(undefined)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the resume entry for
+              "{entryToDelete?.companyName}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setEntryToDelete(undefined)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <footer className="py-6 text-center text-sm text-muted-foreground">
+        © {new Date().getFullYear()} ResuTrack. Built with professionalism.
+      </footer>
+    </div>
+  );
 }
