@@ -195,6 +195,18 @@ export default function ResuTrackPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {selectedEntryIds.length > 0 && (
+              <div className="mb-4 hidden md:flex justify-end">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="text-sm"
+                  onClick={handleDeleteSelected}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedEntryIds.length})
+                </Button>
+              </div>
+            )}
             <ResumeTable
               entries={resumeEntries}
               onEdit={handleEdit}
@@ -203,13 +215,11 @@ export default function ResuTrackPage() {
               selectedEntryIds={selectedEntryIds}
               onSelectEntry={handleSelectEntry}
               onSelectAllEntries={handleSelectAllEntries}
-              onDeleteSelected={handleDeleteSelected} // Pass down the handler
+              onDeleteSelected={handleDeleteSelected}
             />
           </CardContent>
         </Card>
       </main>
-
-      {/* Removed fixed "Delete Selected" button from here */}
 
       <AlertDialog open={!!entryToDelete} onOpenChange={(open) => !open && setEntryToDelete(undefined)}>
         <AlertDialogContent>
