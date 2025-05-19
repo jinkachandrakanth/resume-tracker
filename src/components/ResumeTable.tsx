@@ -12,8 +12,8 @@ import {
 import type { ResumeEntry } from "@/types";
 import { ResumeTableRow } from "./ResumeTableRow";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button"; // Import Button
-import { Trash2 } from "lucide-react"; // Import Trash2 icon
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 interface ResumeTableProps {
   entries: ResumeEntry[];
@@ -23,7 +23,7 @@ interface ResumeTableProps {
   selectedEntryIds: string[];
   onSelectEntry: (entryId: string, checked: boolean) => void;
   onSelectAllEntries: (checked: boolean) => void;
-  onDeleteSelected: () => void; // Add prop for delete selected handler
+  onDeleteSelected: () => void;
 }
 
 export function ResumeTable({
@@ -34,7 +34,7 @@ export function ResumeTable({
   selectedEntryIds,
   onSelectEntry,
   onSelectAllEntries,
-  onDeleteSelected, // Destructure the new prop
+  onDeleteSelected,
 }: ResumeTableProps) {
   if (entries.length === 0) {
     return (
@@ -48,7 +48,6 @@ export function ResumeTable({
 
   return (
     <div className="mt-8 md:overflow-x-auto md:rounded-lg md:border md:shadow-sm">
-      {/* For larger screens, use the table layout */}
       <Table className="hidden md:table">
         <TableCaption className="hidden md:table-caption">A list of your tracked resume submissions.</TableCaption>
         <TableHeader className="hidden md:table-header-group">
@@ -61,10 +60,12 @@ export function ResumeTable({
                   aria-label="Select all rows"
                 />
               </TableHead>
-              <TableHead className="w-[200px]">Company</TableHead>
-              <TableHead className="w-[250px]">Resume Link</TableHead> {/* Adjusted width for better truncation */}
-              <TableHead className="w-[150px]">Date</TableHead>
+              <TableHead className="w-[180px]">Company</TableHead>
+              <TableHead className="w-[200px]">Resume Link</TableHead>
+              <TableHead className="w-[150px]">Date Applied</TableHead>
               <TableHead className="w-[120px]">Stipend (INR)</TableHead>
+              <TableHead className="w-[180px]">Exam</TableHead>
+              <TableHead className="w-[180px]">Interview</TableHead>
               <TableHead className="text-right w-[180px]">Actions</TableHead>
             </>
           </TableRow>
@@ -85,7 +86,6 @@ export function ResumeTable({
         </TableBody>
       </Table>
 
-      {/* For smaller screens, use the card-like layout */}
       <div className="space-y-4 md:hidden">
          <div className="flex items-center justify-between p-2 border-b">
             <div className="flex items-center">

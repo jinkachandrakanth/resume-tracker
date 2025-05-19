@@ -1,9 +1,10 @@
+
 "use client";
 
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, IndianRupee, Briefcase, Link as LinkIcon, Paperclip, Image as ImageIcon, X } from "lucide-react";
+import { CalendarIcon, IndianRupee, Briefcase, Link as LinkIcon, Paperclip, Image as ImageIcon, X, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { resumeEntrySchema, type ResumeFormData, type ResumeEntry } from "@/types";
-import NextImage from 'next/image'; // Using NextImage for potential optimization if needed later
 
 interface ResumeFormProps {
   onSubmit: (data: ResumeFormData) => void;
@@ -43,6 +43,8 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
       stipend: 0,
       note: "",
       image: "",
+      examDate: null,
+      interviewDate: null,
     },
   });
 
@@ -51,6 +53,8 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
       form.reset({
         ...initialData,
         registrationDate: initialData.registrationDate ? new Date(initialData.registrationDate) : new Date(),
+        examDate: initialData.examDate ? new Date(initialData.examDate) : null,
+        interviewDate: initialData.interviewDate ? new Date(initialData.interviewDate) : null,
       });
       setImagePreview(initialData.image || null);
     } else {
@@ -61,6 +65,8 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
         stipend: 0,
         note: "",
         image: "",
+        examDate: null,
+        interviewDate: null,
       });
       setImagePreview(null);
     }
@@ -83,9 +89,50 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
     form.setValue("image", "");
     setImagePreview(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // Reset file input
+      fileInputRef.current.value = ""; 
     }
   };
+
+  const renderOptionalDatePicker = (name: "examDate" | "interviewDate", label: string) => (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="flex flex-col">
+          <FormLabel>{label}</FormLabel>
+          <Popover>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full pl-3 text-left font-normal",
+                    !field.value && "text-muted-foreground"
+                  )}
+                >
+                  {field.value ? (
+                    format(new Date(field.value), "PPp") // Show date and time if available
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={field.value ? new Date(field.value) : undefined}
+                onSelect={(date) => field.onChange(date || null)} // Allow clearing
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
 
   return (
     <Form {...form}>
@@ -128,7 +175,7 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
             name="registrationDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Registration Date</FormLabel>
+                <FormLabel>Date Applied</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -180,6 +227,10 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
               </FormItem>
             )}
           />
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {renderOptionalDatePicker("examDate", "Exam Date & Time")}
+          {renderOptionalDatePicker("interviewDate", "Interview Date & Time")}
         </div>
         <FormField
           control={form.control}

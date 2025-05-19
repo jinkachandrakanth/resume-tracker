@@ -55,10 +55,12 @@ export default function ResuTrackPage() {
     const storedEntries = localStorage.getItem("resumeEntries");
     if (storedEntries) {
       try {
-        const parsedEntries = JSON.parse(storedEntries) as ResumeEntry[];
-        const correctedEntries = parsedEntries.map(entry => ({
+        const parsedEntries = JSON.parse(storedEntries) as any[]; // Use any initially for broader compatibility
+        const correctedEntries: ResumeEntry[] = parsedEntries.map(entry => ({
           ...entry,
-          registrationDate: new Date(entry.registrationDate)
+          registrationDate: new Date(entry.registrationDate),
+          examDate: entry.examDate ? new Date(entry.examDate) : null,
+          interviewDate: entry.interviewDate ? new Date(entry.interviewDate) : null,
         }));
         setResumeEntries(correctedEntries);
       } catch (error) {
@@ -74,18 +76,24 @@ export default function ResuTrackPage() {
 
   const handleFormSubmit = (data: ResumeFormData) => {
     setIsLoading(true);
+    const processedData = {
+      ...data,
+      registrationDate: new Date(data.registrationDate),
+      examDate: data.examDate ? new Date(data.examDate) : null,
+      interviewDate: data.interviewDate ? new Date(data.interviewDate) : null,
+    };
+
     if (editingEntry) {
       setResumeEntries(
         resumeEntries.map((entry) =>
-          entry.id === editingEntry.id ? { ...editingEntry, ...data, registrationDate: new Date(data.registrationDate) } : entry
+          entry.id === editingEntry.id ? { ...editingEntry, ...processedData } : entry
         )
       );
       toast({ title: "Success!", description: "Resume entry updated." });
     } else {
       const newEntry: ResumeEntry = {
-        ...data,
+        ...processedData,
         id: crypto.randomUUID(),
-        registrationDate: new Date(data.registrationDate),
       };
       setResumeEntries([newEntry, ...resumeEntries]);
       toast({ title: "Success!", description: "New resume entry added." });

@@ -29,6 +29,15 @@ interface ResumeTableRowProps {
   onSelectEntry: (checked: boolean) => void;
 }
 
+const formatDateOrNA = (date: Date | string | null | undefined) => {
+  if (!date) return "N/A";
+  try {
+    return format(new Date(date), "MMM d, yyyy, h:mm a");
+  } catch (error) {
+    return "Invalid Date";
+  }
+};
+
 export function ResumeTableRow({
   entry,
   onEdit,
@@ -57,7 +66,7 @@ export function ResumeTableRow({
               rel="noopener noreferrer"
               className={cn(
                 "text-primary hover:underline truncate",
-                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block"
+                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block" 
               )}
             >
               {entry.resumeLink}
@@ -65,7 +74,7 @@ export function ResumeTableRow({
           </div>
 
           <div className={isMobileView ? "mb-1" : ""}>
-            {isMobileView && <span className="font-semibold mr-2">Date:</span>}
+            {isMobileView && <span className="font-semibold mr-2">Date Applied:</span>}
             {format(new Date(entry.registrationDate), "MMM d, yyyy")}
           </div>
 
@@ -73,6 +82,19 @@ export function ResumeTableRow({
             {isMobileView && <span className="font-semibold mr-2">Stipend (INR):</span>}
             ₹{entry.stipend.toLocaleString()}
           </div>
+
+          {isMobileView && (
+            <>
+              <div className="mb-1">
+                <span className="font-semibold mr-2">Exam:</span>
+                {formatDateOrNA(entry.examDate)}
+              </div>
+              <div className="mb-1">
+                <span className="font-semibold mr-2">Interview:</span>
+                {formatDateOrNA(entry.interviewDate)}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>
@@ -166,8 +188,8 @@ export function ResumeTableRow({
             aria-label={`Select row for ${entry.companyName}`}
           />
         </TableCell>
-        <TableCell className="font-medium w-[200px]">{entry.companyName}</TableCell>
-        <TableCell className="max-w-[250px] overflow-hidden"> {/* Added overflow-hidden */}
+        <TableCell className="font-medium w-[180px]">{entry.companyName}</TableCell>
+        <TableCell className="max-w-[200px] overflow-hidden">
           <a
             href={entry.resumeLink}
             target="_blank"
@@ -179,6 +201,8 @@ export function ResumeTableRow({
         </TableCell>
         <TableCell className="w-[150px]">{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
         <TableCell className="w-[120px]">₹{entry.stipend.toLocaleString()}</TableCell>
+        <TableCell className="w-[180px]">{formatDateOrNA(entry.examDate)}</TableCell>
+        <TableCell className="w-[180px]">{formatDateOrNA(entry.interviewDate)}</TableCell>
         <TableCell className="text-right w-[180px]">
           {actionsContentDesktop}
         </TableCell>

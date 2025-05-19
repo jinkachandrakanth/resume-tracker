@@ -8,11 +8,12 @@ export const resumeEntrySchema = z.object({
   stipend: z.coerce.number().min(0, "Stipend must be non-negative").optional().default(0),
   note: z.string().optional(),
   image: z.string().optional(), // Will store image as Data URI
+  examDate: z.date().optional().nullable(),
+  interviewDate: z.date().optional().nullable(),
 });
 
 export type ResumeFormData = z.infer<typeof resumeEntrySchema>;
 
 export interface ResumeEntry extends ResumeFormData {
   id: string; // Always present after creation
-  // Validation fields removed
 }
