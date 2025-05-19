@@ -164,7 +164,7 @@ export default function ResuTrackPage() {
                   <PlusCircle className="mr-2 h-4 w-4" /> Add New Entry
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[625px]">
+              <DialogContent className="sm:max-w-[625px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingEntry ? "Edit" : "Add New"} Resume Entry</DialogTitle>
                   <DialogDescription>
