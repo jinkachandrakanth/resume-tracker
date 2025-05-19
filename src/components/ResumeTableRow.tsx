@@ -3,6 +3,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { FilePenLine, Trash2, Eye, MoreVertical } from "lucide-react";
+import { cn } from "@/lib/utils"; // Added this import
 
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
