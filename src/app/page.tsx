@@ -248,11 +248,11 @@ export default function ResuTrackPage() {
       </AlertDialog>
 
       <Dialog open={!!noteToView} onOpenChange={() => setNoteToView(null)}>
-        <DialogContent className="sm:max-w-[625px]">
+        <DialogContent className="sm:max-w-[625px] max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Note for {noteToView?.companyName}</DialogTitle>
           </DialogHeader>
-          <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="py-4 space-y-4 overflow-y-auto flex-grow">
             {noteToView?.image && (
               <div className="relative w-full aspect-video rounded-md overflow-hidden border">
                 <img src={noteToView.image} alt="Uploaded note" className="object-contain w-full h-full" />
