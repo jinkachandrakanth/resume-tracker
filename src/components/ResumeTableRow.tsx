@@ -50,7 +50,7 @@ export function ResumeTableRow({ entry, onEdit, onDelete, onValidateLink }: Resu
         </a>
       </TableCell>
       <TableCell>{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
-      <TableCell>${entry.stipend.toLocaleString()}</TableCell>
+      <TableCell>₹{entry.stipend.toLocaleString()}</TableCell>
       <TableCell>
         <div className="flex items-center space-x-2">
           {getValidationStatusBadge()}

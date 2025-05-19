@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, DollarSign, Briefcase, Link as LinkIcon } from "lucide-react";
+import { CalendarIcon, IndianRupee, Briefcase, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -127,11 +127,11 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
             name="stipend"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Stipend (USD)</FormLabel>
+                <FormLabel>Stipend (INR)</FormLabel>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <IndianRupee className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <FormControl>
-                    <Input type="number" placeholder="e.g. 5000" {...field} className="pl-10" />
+                    <Input type="number" placeholder="e.g. 50000" {...field} className="pl-10" />
                   </FormControl>
                 </div>
                 <FormMessage />

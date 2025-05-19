@@ -36,7 +36,7 @@ export function ResumeTable({ entries, onEdit, onDelete, onValidateLink }: Resum
             <TableHead className="w-[200px]">Company</TableHead>
             <TableHead>Resume Link</TableHead>
             <TableHead className="w-[150px]">Date</TableHead>
-            <TableHead className="w-[120px]">Stipend</TableHead>
+            <TableHead className="w-[120px]">Stipend (INR)</TableHead>
             <TableHead className="w-[180px]">Validation Status</TableHead>
             <TableHead className="text-right w-[150px]">Actions</TableHead>
           </TableRow>
