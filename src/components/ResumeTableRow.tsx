@@ -39,20 +39,11 @@ export function ResumeTableRow({
   onSelectEntry,
 }: ResumeTableRowProps) {
 
-  const commonContent = (
+  const commonContentForMobile = ( // Renamed to be specific for mobile, desktop is structured directly
     <>
       <div className={cn("flex items-center", isMobileView ? "mb-2" : "")}>
-        {!isMobileView && (
-          <TableCell className="px-2 py-2 w-[50px]">
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={(checked) => onSelectEntry(!!checked)}
-              aria-label={`Select row for ${entry.companyName}`}
-            />
-          </TableCell>
-        )}
          {isMobileView && <div className="w-8"> {/* Spacer for mobile checkbox alignment */} </div>}
-        <div className="flex-grow min-w-0"> {/* Added min-w-0 here to help with truncation */}
+        <div className="flex-grow min-w-0">
           <div className={isMobileView ? "mb-1" : ""}>
             {isMobileView && <span className="font-semibold mr-2">Company:</span>}
             <span className={isMobileView ? "" : "font-medium"}>{entry.companyName}</span>
@@ -65,8 +56,8 @@ export function ResumeTableRow({
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                "text-primary hover:underline truncate", // Removed break-all, rely on truncate and overflow hidden of parent
-                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block" // flex-1 for mobile to take available space
+                "text-primary hover:underline truncate", 
+                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block" 
               )}
             >
               {entry.resumeLink}
@@ -154,8 +145,8 @@ export function ResumeTableRow({
           className="mr-3 mt-1 shrink-0"
           id={`checkbox-${entry.id}`}
         />
-        <div className="flex-grow min-w-0"> {/* Added min-w-0 here as well */}
-          {commonContent}
+        <div className="flex-grow min-w-0">
+          {commonContentForMobile}
         </div>
         <div className="ml-auto shrink-0">
          {actionsContentMobile}
@@ -164,41 +155,32 @@ export function ResumeTableRow({
     );
   }
 
+  // Desktop View
   return (
     <TableRow key={entry.id} data-state={isSelected ? "selected" : undefined}>
-      {/* Checkbox is now part of commonContent for TableCell structure */}
-      <TableCell className="font-medium hidden md:table-cell w-[200px]">{entry.companyName}</TableCell>
-      <TableCell className="hidden md:table-cell max-w-[200px]"> {/* Ensure max-width for desktop link cell */}
+      <TableCell className="px-2 py-2 w-[50px]">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelectEntry(!!checked)}
+          aria-label={`Select row for ${entry.companyName}`}
+        />
+      </TableCell>
+      <TableCell className="font-medium w-[200px]">{entry.companyName}</TableCell>
+      <TableCell className="max-w-[250px]"> {/* Adjusted to match header spec if it was 250px */}
         <a
           href={entry.resumeLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline truncate inline-block" // Removed max-w-[200px] from here, relying on cell's max-width
+          className="text-primary hover:underline truncate inline-block"
         >
           {entry.resumeLink}
         </a>
       </TableCell>
-      <TableCell className="hidden md:table-cell w-[150px]">{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
-      <TableCell className="hidden md:table-cell w-[120px]">₹{entry.stipend.toLocaleString()}</TableCell>
-      
-      {/* Merging commonContent into the cells for desktop */}
-      {!isMobileView && (
-        <>
-            <TableCell className="px-2 py-2 w-[50px]">
-                <Checkbox
-                checked={isSelected}
-                onCheckedChange={(checked) => onSelectEntry(!!checked)}
-                aria-label={`Select row for ${entry.companyName}`}
-                />
-            </TableCell>
-            {/* The rest of the data cells are already defined above */}
-        </>
-      )}
-
-      <TableCell className="text-right hidden md:table-cell w-[180px]">
+      <TableCell className="w-[150px]">{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
+      <TableCell className="w-[120px]">₹{entry.stipend.toLocaleString()}</TableCell>
+      <TableCell className="text-right w-[180px]">
         {actionsContentDesktop}
       </TableCell>
     </TableRow>
   );
 }
-
