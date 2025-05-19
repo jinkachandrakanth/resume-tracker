@@ -49,18 +49,20 @@ export function ResumeTable({
         <TableCaption className="hidden md:table-caption">A list of your tracked resume submissions.</TableCaption>
         <TableHeader className="hidden md:table-header-group">
           <TableRow>
-            <TableHead className="w-[50px] px-2">
-              <Checkbox
-                checked={isAllSelected}
-                onCheckedChange={(checked) => onSelectAllEntries(!!checked)}
-                aria-label="Select all rows"
-              />
-            </TableHead>
-            <TableHead className="w-[200px]">Company</TableHead>
-            <TableHead className="w-[250px]">Resume Link</TableHead> {/* Adjusted width for better truncation */}
-            <TableHead className="w-[150px]">Date</TableHead>
-            <TableHead className="w-[120px]">Stipend (INR)</TableHead>
-            <TableHead className="text-right w-[180px]">Actions</TableHead> 
+            <>
+              <TableHead className="w-[50px] px-2">
+                <Checkbox
+                  checked={isAllSelected}
+                  onCheckedChange={(checked) => onSelectAllEntries(!!checked)}
+                  aria-label="Select all rows"
+                />
+              </TableHead>
+              <TableHead className="w-[200px]">Company</TableHead>
+              <TableHead className="w-[250px]">Resume Link</TableHead> {/* Adjusted width for better truncation */}
+              <TableHead className="w-[150px]">Date</TableHead>
+              <TableHead className="w-[120px]">Stipend (INR)</TableHead>
+              <TableHead className="text-right w-[180px]">Actions</TableHead>
+            </>
           </TableRow>
         </TableHeader>
         <TableBody className="hidden md:table-row-group">

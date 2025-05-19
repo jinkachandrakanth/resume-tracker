@@ -56,8 +56,8 @@ export function ResumeTableRow({
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                "text-primary hover:underline truncate", 
-                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block" 
+                "text-primary hover:underline truncate",
+                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block"
               )}
             >
               {entry.resumeLink}
@@ -84,7 +84,7 @@ export function ResumeTableRow({
         {(entry.note || entry.image) && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={() => onViewNote(entry)} aria-label="View Note">
+              <Button variant="ghost" size="icon" onClick={() => onViewNote(entry)} aria-label="View Note/Image">
                 <Eye className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -158,29 +158,31 @@ export function ResumeTableRow({
   // Desktop View
   return (
     <TableRow key={entry.id} data-state={isSelected ? "selected" : undefined}>
-      <TableCell className="px-2 py-2 w-[50px]">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={(checked) => onSelectEntry(!!checked)}
-          aria-label={`Select row for ${entry.companyName}`}
-        />
-      </TableCell>
-      <TableCell className="font-medium w-[200px]">{entry.companyName}</TableCell>
-      <TableCell className="max-w-[250px] overflow-hidden"> {/* Added overflow-hidden */}
-        <a
-          href={entry.resumeLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:underline truncate inline-block"
-        >
-          {entry.resumeLink}
-        </a>
-      </TableCell>
-      <TableCell className="w-[150px]">{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
-      <TableCell className="w-[120px]">₹{entry.stipend.toLocaleString()}</TableCell>
-      <TableCell className="text-right w-[180px]">
-        {actionsContentDesktop}
-      </TableCell>
+      <>
+        <TableCell className="px-2 py-2 w-[50px]">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={(checked) => onSelectEntry(!!checked)}
+            aria-label={`Select row for ${entry.companyName}`}
+          />
+        </TableCell>
+        <TableCell className="font-medium w-[200px]">{entry.companyName}</TableCell>
+        <TableCell className="max-w-[250px] overflow-hidden"> {/* Added overflow-hidden */}
+          <a
+            href={entry.resumeLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline truncate inline-block"
+          >
+            {entry.resumeLink}
+          </a>
+        </TableCell>
+        <TableCell className="w-[150px]">{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
+        <TableCell className="w-[120px]">₹{entry.stipend.toLocaleString()}</TableCell>
+        <TableCell className="text-right w-[180px]">
+          {actionsContentDesktop}
+        </TableCell>
+      </>
     </TableRow>
   );
 }
