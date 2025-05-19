@@ -12,6 +12,8 @@ import {
 import type { ResumeEntry } from "@/types";
 import { ResumeTableRow } from "./ResumeTableRow";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button"; // Import Button
+import { Trash2 } from "lucide-react"; // Import Trash2 icon
 
 interface ResumeTableProps {
   entries: ResumeEntry[];
@@ -21,6 +23,7 @@ interface ResumeTableProps {
   selectedEntryIds: string[];
   onSelectEntry: (entryId: string, checked: boolean) => void;
   onSelectAllEntries: (checked: boolean) => void;
+  onDeleteSelected: () => void; // Add prop for delete selected handler
 }
 
 export function ResumeTable({
@@ -31,6 +34,7 @@ export function ResumeTable({
   selectedEntryIds,
   onSelectEntry,
   onSelectAllEntries,
+  onDeleteSelected, // Destructure the new prop
 }: ResumeTableProps) {
   if (entries.length === 0) {
     return (
@@ -83,14 +87,26 @@ export function ResumeTable({
 
       {/* For smaller screens, use the card-like layout */}
       <div className="space-y-4 md:hidden">
-         <div className="flex items-center p-2 border-b">
-            <Checkbox
-                id="selectAllMobile"
-                checked={isAllSelected}
-                onCheckedChange={(checked) => onSelectAllEntries(!!checked)}
-                aria-label="Select all rows"
-              />
-            <label htmlFor="selectAllMobile" className="ml-2 text-sm font-medium">Select All</label>
+         <div className="flex items-center justify-between p-2 border-b">
+            <div className="flex items-center">
+              <Checkbox
+                  id="selectAllMobile"
+                  checked={isAllSelected}
+                  onCheckedChange={(checked) => onSelectAllEntries(!!checked)}
+                  aria-label="Select all rows"
+                />
+              <label htmlFor="selectAllMobile" className="ml-2 text-sm font-medium">Select All</label>
+            </div>
+            {selectedEntryIds.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={onDeleteSelected}
+                size="sm"
+                className="text-sm" 
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Delete ({selectedEntryIds.length})
+              </Button>
+            )}
         </div>
         {entries.map((entry) => (
           <ResumeTableRow

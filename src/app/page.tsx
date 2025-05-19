@@ -203,18 +203,13 @@ export default function ResuTrackPage() {
               selectedEntryIds={selectedEntryIds}
               onSelectEntry={handleSelectEntry}
               onSelectAllEntries={handleSelectAllEntries}
+              onDeleteSelected={handleDeleteSelected} // Pass down the handler
             />
           </CardContent>
         </Card>
       </main>
 
-      {selectedEntryIds.length > 0 && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <Button variant="destructive" onClick={handleDeleteSelected} size="lg" className="shadow-lg">
-            <Trash2 className="mr-2 h-5 w-5" /> Delete Selected ({selectedEntryIds.length})
-          </Button>
-        </div>
-      )}
+      {/* Removed fixed "Delete Selected" button from here */}
 
       <AlertDialog open={!!entryToDelete} onOpenChange={(open) => !open && setEntryToDelete(undefined)}>
         <AlertDialogContent>
