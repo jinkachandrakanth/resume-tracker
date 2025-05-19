@@ -4,7 +4,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, IndianRupee, Briefcase, Link as LinkIcon, Paperclip, Image as ImageIcon, X, Clock } from "lucide-react";
+import { CalendarIcon, IndianRupee, Briefcase, Link as LinkIcon, Paperclip, Image as ImageIcon, X } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -89,50 +89,95 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
     form.setValue("image", "");
     setImagePreview(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; 
+      fileInputRef.current.value = "";
     }
   };
 
-  const renderOptionalDatePicker = (name: "examDate" | "interviewDate", label: string) => (
+  const renderOptionalDateTimePicker = (name: "examDate" | "interviewDate", label: string) => (
     <FormField
       control={form.control}
       name={name}
-      render={({ field }) => (
-        <FormItem className="flex flex-col">
-          <FormLabel>{label}</FormLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full pl-3 text-left font-normal",
-                    !field.value && "text-muted-foreground"
-                  )}
-                >
-                  {field.value ? (
-                    format(new Date(field.value), "PPp") // Show date and time if available
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={field.value ? new Date(field.value) : undefined}
-                onSelect={(date) => field.onChange(date || null)} // Allow clearing
-                initialFocus
+      render={({ field }) => {
+        const selectedDateTime = field.value ? new Date(field.value) : null;
+
+        const handleDateChange = (date: Date | undefined) => {
+          if (date) {
+            const newDateTime = selectedDateTime ? new Date(selectedDateTime) : new Date();
+            newDateTime.setFullYear(date.getFullYear());
+            newDateTime.setMonth(date.getMonth());
+            newDateTime.setDate(date.getDate());
+            if (!selectedDateTime) { // If it's the first time setting date, default time to 00:00
+              newDateTime.setHours(0, 0, 0, 0);
+            }
+            field.onChange(newDateTime);
+          } else {
+            field.onChange(null); // Clear the date and time
+          }
+        };
+
+        const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          const timeValue = e.target.value; // "HH:mm"
+          if (selectedDateTime && timeValue) {
+            const [hours, minutes] = timeValue.split(':').map(Number);
+            const newDateTime = new Date(selectedDateTime);
+            newDateTime.setHours(hours, minutes, 0, 0); // Set seconds and ms to 0
+            field.onChange(newDateTime);
+          }
+          // If no date selected, time input is disabled, so no specific handling needed here
+        };
+
+        return (
+          <FormItem className="flex flex-col">
+            <FormLabel>{label}</FormLabel>
+            <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full sm:flex-1 justify-start text-left font-normal", // Use sm:flex-1 to allow button to grow
+                        !selectedDateTime && "text-muted-foreground"
+                      )}
+                    >
+                      {selectedDateTime ? (
+                        format(selectedDateTime, "PPP") // Button shows only date
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDateTime || undefined}
+                    onSelect={handleDateChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <Input
+                type="time"
+                className="w-full sm:w-auto sm:max-w-[150px]" // Responsive width for time input
+                value={selectedDateTime ? format(selectedDateTime, "HH:mm") : ""}
+                onChange={handleTimeChange}
+                disabled={!selectedDateTime} // Disable time input until a date is selected
               />
-            </PopoverContent>
-          </Popover>
-          <FormMessage />
-        </FormItem>
-      )}
+            </div>
+            {selectedDateTime && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Selected: {format(selectedDateTime, "PPp")} {/* Shows Date, Time AM/PM */}
+              </p>
+            )}
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
+
 
   return (
     <Form {...form}>
@@ -229,8 +274,8 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
           />
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {renderOptionalDatePicker("examDate", "Exam Date & Time")}
-          {renderOptionalDatePicker("interviewDate", "Interview Date & Time")}
+          {renderOptionalDateTimePicker("examDate", "Exam Date & Time")}
+          {renderOptionalDateTimePicker("interviewDate", "Interview Date & Time")}
         </div>
         <FormField
           control={form.control}
@@ -249,11 +294,11 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
           <FormLabel>Attach Image (Optional)</FormLabel>
           <div className="flex items-center gap-4">
             <FormControl>
-              <Input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleImageChange} 
-                className="hidden" 
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
                 id="imageUpload"
                 ref={fileInputRef}
               />
@@ -285,3 +330,5 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
     </Form>
   );
 }
+
+    
