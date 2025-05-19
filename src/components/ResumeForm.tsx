@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, IndianRupee, Briefcase, Link as LinkIcon } from "lucide-react";
+import { CalendarIcon, IndianRupee, Briefcase, Link as LinkIcon, Paperclip, Image as ImageIcon, X } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { resumeEntrySchema, type ResumeFormData, type ResumeEntry } from "@/types";
+import NextImage from 'next/image'; // Using NextImage for potential optimization if needed later
 
 interface ResumeFormProps {
   onSubmit: (data: ResumeFormData) => void;
@@ -29,6 +31,9 @@ interface ResumeFormProps {
 }
 
 export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading = false }: ResumeFormProps) {
+  const [imagePreview, setImagePreview] = React.useState<string | null>(initialData?.image || null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const form = useForm<ResumeFormData>({
     resolver: zodResolver(resumeEntrySchema),
     defaultValues: initialData || {
@@ -36,14 +41,51 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
       resumeLink: "",
       registrationDate: new Date(),
       stipend: 0,
+      note: "",
+      image: "",
     },
   });
 
   React.useEffect(() => {
     if (initialData) {
-      form.reset(initialData);
+      form.reset({
+        ...initialData,
+        registrationDate: initialData.registrationDate ? new Date(initialData.registrationDate) : new Date(),
+      });
+      setImagePreview(initialData.image || null);
+    } else {
+      form.reset({
+        companyName: "",
+        resumeLink: "",
+        registrationDate: new Date(),
+        stipend: 0,
+        note: "",
+        image: "",
+      });
+      setImagePreview(null);
     }
   }, [initialData, form]);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUri = reader.result as string;
+        form.setValue("image", dataUri);
+        setImagePreview(dataUri);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    form.setValue("image", "");
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Reset file input
+    }
+  };
 
   return (
     <Form {...form}>
@@ -98,7 +140,7 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP")
+                          format(new Date(field.value), "PPP")
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -109,8 +151,8 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
+                      selected={field.value ? new Date(field.value) : undefined}
+                      onSelect={(date) => field.onChange(date || new Date())}
                       disabled={(date) =>
                         date > new Date() || date < new Date("1900-01-01")
                       }
@@ -131,7 +173,7 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
                 <div className="relative">
                   <IndianRupee className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <FormControl>
-                    <Input type="number" placeholder="e.g. 50000" {...field} className="pl-10" />
+                    <Input type="number" placeholder="e.g. 50000" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="pl-10" />
                   </FormControl>
                 </div>
                 <FormMessage />
@@ -139,6 +181,52 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
             )}
           />
         </div>
+        <FormField
+          control={form.control}
+          name="note"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Note</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Add any relevant notes here..." {...field} rows={4} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormItem>
+          <FormLabel>Attach Image (Optional)</FormLabel>
+          <div className="flex items-center gap-4">
+            <FormControl>
+              <Input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleImageChange} 
+                className="hidden" 
+                id="imageUpload"
+                ref={fileInputRef}
+              />
+            </FormControl>
+            <Button type="button" variant="outline" onClick={() => document.getElementById('imageUpload')?.click()}>
+              <Paperclip className="mr-2 h-4 w-4" /> {imagePreview ? "Change Image" : "Upload Image"}
+            </Button>
+          </div>
+          {imagePreview && (
+            <div className="mt-4 relative w-48 h-32 border rounded-md overflow-hidden group">
+               <img src={imagePreview} alt="Preview" className="object-cover w-full h-full" />
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={removeImage}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          <FormMessage>{form.formState.errors.image?.message}</FormMessage>
+        </FormItem>
         <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
           {isLoading ? "Saving..." : (isEditing ? "Save Changes" : "Add Entry")}
         </Button>

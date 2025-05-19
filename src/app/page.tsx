@@ -1,17 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { PlusCircle, Sun, Moon } from "lucide-react";
+import { PlusCircle, Sun, Moon, Trash2, Eye, Info } from "lucide-react";
+import Image from 'next/image';
 import { AppLogo } from "@/components/icons/AppLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ResumeForm } from "@/components/ResumeForm";
 import { ResumeTable } from "@/components/ResumeTable";
 import type { ResumeEntry, ResumeFormData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { validateResumeLink } from '@/ai/flows/validate-resume-link';
+// Removed: import { validateResumeLink } from '@/ai/flows/validate-resume-link';
+import { Checkbox } from "@/components/ui/checkbox"; // For bulk delete
 
 export default function ResuTrackPage() {
   const [resumeEntries, setResumeEntries] = React.useState<ResumeEntry[]>([]);
@@ -21,8 +23,9 @@ export default function ResuTrackPage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
   const [currentTheme, setCurrentTheme] = React.useState<'light' | 'dark'>('light');
+  const [noteToView, setNoteToView] = React.useState<ResumeEntry | null>(null);
+  const [selectedEntryIds, setSelectedEntryIds] = React.useState<string[]>([]);
 
-  // Effect to set initial theme state based on HTML class (set by layout.tsx)
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       if (document.documentElement.classList.contains('dark')) {
@@ -44,7 +47,6 @@ export default function ResuTrackPage() {
     }
   };
 
-  // Load entries from localStorage on mount
   React.useEffect(() => {
     const storedEntries = localStorage.getItem("resumeEntries");
     if (storedEntries) {
@@ -62,11 +64,9 @@ export default function ResuTrackPage() {
     }
   }, []);
 
-  // Save entries to localStorage whenever they change
   React.useEffect(() => {
     localStorage.setItem("resumeEntries", JSON.stringify(resumeEntries));
   }, [resumeEntries]);
-
 
   const handleFormSubmit = (data: ResumeFormData) => {
     setIsLoading(true);
@@ -81,7 +81,6 @@ export default function ResuTrackPage() {
       const newEntry: ResumeEntry = {
         ...data,
         id: crypto.randomUUID(),
-        validationStatus: 'pending',
         registrationDate: new Date(data.registrationDate),
       };
       setResumeEntries([newEntry, ...resumeEntries]);
@@ -109,30 +108,38 @@ export default function ResuTrackPage() {
     }
   };
 
-  const handleValidateLink = async (entryToValidate: ResumeEntry) => {
-    setResumeEntries(prev => prev.map(e => e.id === entryToValidate.id ? { ...e, validationStatus: 'validating' } : e));
-    try {
-      const result = await validateResumeLink({
-        resumeLink: entryToValidate.resumeLink,
-        companyName: entryToValidate.companyName,
-      });
-      setResumeEntries(prev => prev.map(e => e.id === entryToValidate.id ? {
-        ...e,
-        validationStatus: result.isValid ? 'valid' : 'invalid',
-        validationResult: result,
-      } : e));
-      toast({ title: "Validation Complete", description: `Link for ${entryToValidate.companyName} processed.` });
-    } catch (error) {
-      console.error("Failed to validate link:", error);
-      setResumeEntries(prev => prev.map(e => e.id === entryToValidate.id ? { ...e, validationStatus: 'error' } : e));
-      toast({ variant: "destructive", title: "Validation Error", description: "Could not validate the resume link." });
-    }
+  const handleViewNote = (entry: ResumeEntry) => {
+    setNoteToView(entry);
   };
 
   const openAddNewForm = () => {
     setEditingEntry(undefined);
     setIsFormOpen(true);
-  }
+  };
+
+  const handleSelectEntry = (entryId: string, checked: boolean) => {
+    setSelectedEntryIds(prevSelectedIds =>
+      checked
+        ? [...prevSelectedIds, entryId]
+        : prevSelectedIds.filter(id => id !== entryId)
+    );
+  };
+
+  const handleSelectAllEntries = (checked: boolean) => {
+    if (checked) {
+      setSelectedEntryIds(resumeEntries.map(entry => entry.id));
+    } else {
+      setSelectedEntryIds([]);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    setResumeEntries(prevEntries =>
+      prevEntries.filter(entry => !selectedEntryIds.includes(entry.id))
+    );
+    toast({ title: "Deleted", description: `${selectedEntryIds.length} resume entr${selectedEntryIds.length === 1 ? 'y' : 'ies'} removed.` });
+    setSelectedEntryIds([]);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -143,6 +150,11 @@ export default function ResuTrackPage() {
             <h1 className="text-2xl font-bold">ResuTrack</h1>
           </div>
           <div className="flex items-center gap-4">
+            {selectedEntryIds.length > 0 && (
+              <Button variant="destructive" onClick={handleDeleteSelected}>
+                <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedEntryIds.length})
+              </Button>
+            )}
             <Button onClick={toggleTheme} variant="outline" size="icon" aria-label="Toggle theme">
               {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
             </Button>
@@ -176,7 +188,7 @@ export default function ResuTrackPage() {
           <CardHeader>
             <CardTitle className="text-xl">Your Resume Submissions</CardTitle>
             <CardDescription>
-              Track, manage, and validate your job applications all in one place.
+              Track and manage your job applications all in one place.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -184,7 +196,10 @@ export default function ResuTrackPage() {
               entries={resumeEntries}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onValidateLink={handleValidateLink}
+              onViewNote={handleViewNote}
+              selectedEntryIds={selectedEntryIds}
+              onSelectEntry={handleSelectEntry}
+              onSelectAllEntries={handleSelectAllEntries}
             />
           </CardContent>
         </Card>
@@ -207,6 +222,29 @@ export default function ResuTrackPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!noteToView} onOpenChange={() => setNoteToView(null)}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle>Note for {noteToView?.companyName}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+            {noteToView?.image && (
+              <div className="relative w-full aspect-video rounded-md overflow-hidden border">
+                <img src={noteToView.image} alt="Uploaded note" className="object-contain w-full h-full" />
+              </div>
+            )}
+            {noteToView?.note ? (
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{noteToView.note}</p>
+            ) : (
+              !noteToView?.image && <p className="text-sm text-muted-foreground">No note or image added.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setNoteToView(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <footer className="py-6 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} ResuTrack. Built with professionalism.

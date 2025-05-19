@@ -1,151 +1,172 @@
-
 "use client";
 
-import React from "react"; // Ensure React is imported
+import React from "react";
 import { format } from "date-fns";
-import { FilePenLine, Trash2, Link2, Info, Loader2, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { FilePenLine, Trash2, Eye, MoreVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { ResumeEntry } from "@/types";
-import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "./ui/tooltip";
+
 
 interface ResumeTableRowProps {
   entry: ResumeEntry;
   onEdit: (entry: ResumeEntry) => void;
   onDelete: (entry: ResumeEntry) => void;
-  onValidateLink: (entry: ResumeEntry) => void;
+  onViewNote: (entry: ResumeEntry) => void;
   isMobileView: boolean;
+  isSelected: boolean;
+  onSelectEntry: (checked: boolean) => void;
 }
 
-export function ResumeTableRow({ entry, onEdit, onDelete, onValidateLink, isMobileView }: ResumeTableRowProps) {
-  const getValidationStatusBadge = () => {
-    switch (entry.validationStatus) {
-      case "validating":
-        return <Badge variant="secondary" className="animate-pulse"><Loader2 className="mr-1 h-3 w-3 animate-spin" />Validating...</Badge>;
-      case "valid":
-        return <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white"><CheckCircle className="mr-1 h-3 w-3" />Valid</Badge>;
-      case "invalid":
-        return <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" />Invalid</Badge>;
-      case "error":
-        return <Badge variant="destructive"><AlertTriangle className="mr-1 h-3 w-3" />Error</Badge>;
-      case "pending":
-      default:
-        return <Badge variant="outline">Pending</Badge>;
-    }
-  };
+export function ResumeTableRow({
+  entry,
+  onEdit,
+  onDelete,
+  onViewNote,
+  isMobileView,
+  isSelected,
+  onSelectEntry,
+}: ResumeTableRowProps) {
 
   const commonContent = (
     <>
-      <div className={isMobileView ? "mb-2" : ""}>
-        {isMobileView && <span className="font-semibold mr-2">Company:</span>}
-        <span className={isMobileView ? "" : "font-medium"}>{entry.companyName}</span>
-      </div>
-
-      <div className={isMobileView ? "mb-2 flex items-center" : ""}>
-        {isMobileView && <span className="font-semibold mr-2 shrink-0">Resume Link:</span>}
-        <a
-          href={entry.resumeLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`text-primary hover:underline truncate break-all ${isMobileView ? "min-w-0" : "max-w-[200px] inline-block"}`}
-        >
-          {entry.resumeLink}
-        </a>
-      </div>
-
-      <div className={isMobileView ? "mb-2" : ""}>
-        {isMobileView && <span className="font-semibold mr-2">Date:</span>}
-        {format(new Date(entry.registrationDate), "MMM d, yyyy")}
-      </div>
-
-      <div className={isMobileView ? "mb-2" : ""}>
-        {isMobileView && <span className="font-semibold mr-2">Stipend (INR):</span>}
-        ₹{entry.stipend.toLocaleString()}
-      </div>
-      
-      <div className={isMobileView ? "mb-3 flex items-center" : "flex items-center space-x-2"}>
-        {isMobileView && <span className="font-semibold mr-2">Status:</span>}
-        {getValidationStatusBadge()}
-        {entry.validationResult?.linkValidationTips && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 ml-1">
-                <Info className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 z-50"> {/* Added z-index for popover content */}
-              <div className="space-y-2">
-                <h4 className="font-medium leading-none">Validation Tips</h4>
-                <p className="text-sm text-muted-foreground">
-                  {entry.validationResult.linkValidationTips}
-                </p>
-              </div>
-            </PopoverContent>
-          </Popover>
+      <div className={cn("flex items-center", isMobileView ? "mb-2" : "")}>
+        {!isMobileView && (
+          <TableCell className="px-2 py-2 w-[50px]">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={(checked) => onSelectEntry(!!checked)}
+              aria-label={`Select row for ${entry.companyName}`}
+            />
+          </TableCell>
         )}
+         {isMobileView && <div className="w-8"> {/* Spacer for mobile checkbox alignment */} </div>}
+        <div className="flex-grow">
+          <div className={isMobileView ? "mb-1" : ""}>
+            {isMobileView && <span className="font-semibold mr-2">Company:</span>}
+            <span className={isMobileView ? "" : "font-medium"}>{entry.companyName}</span>
+          </div>
+
+          <div className={isMobileView ? "mb-1 flex items-center" : "flex items-center"}>
+            {isMobileView && <span className="font-semibold mr-2 shrink-0">Resume Link:</span>}
+            <a
+              href={entry.resumeLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                "text-primary hover:underline truncate break-all",
+                isMobileView ? "min-w-0" : "max-w-[200px] inline-block"
+              )}
+            >
+              {entry.resumeLink}
+            </a>
+          </div>
+
+          <div className={isMobileView ? "mb-1" : ""}>
+            {isMobileView && <span className="font-semibold mr-2">Date:</span>}
+            {format(new Date(entry.registrationDate), "MMM d, yyyy")}
+          </div>
+
+          <div className={isMobileView ? "mb-1" : ""}>
+            {isMobileView && <span className="font-semibold mr-2">Stipend (INR):</span>}
+            ₹{entry.stipend.toLocaleString()}
+          </div>
+        </div>
       </div>
     </>
   );
 
-  const actionsContent = (
-     <TooltipProvider>
-      <div className={`flex space-x-2 ${isMobileView ? "justify-start mt-2" : "justify-end"}`}>
+  const actionsContentDesktop = (
+    <TooltipProvider>
+      <div className="flex space-x-1 justify-end">
+        {(entry.note || entry.image) && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => onViewNote(entry)} aria-label="View Note">
+                <Eye className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>View Note/Image</p></TooltipContent>
+          </Tooltip>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onValidateLink(entry)}
-              disabled={entry.validationStatus === 'validating'}
-              aria-label="Validate Link"
-            >
-              {entry.validationStatus === 'validating' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Validate Resume Link</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="icon" onClick={() => onEdit(entry)} aria-label="Edit Entry">
+            <Button variant="ghost" size="icon" onClick={() => onEdit(entry)} aria-label="Edit Entry">
               <FilePenLine className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            <p>Edit Entry</p>
-          </TooltipContent>
+          <TooltipContent><p>Edit Entry</p></TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="destructive" size="icon" onClick={() => onDelete(entry)} aria-label="Delete Entry">
+            <Button variant="ghost" size="icon" onClick={() => onDelete(entry)} aria-label="Delete Entry" className="text-destructive hover:text-destructive/90 hover:bg-destructive/10">
               <Trash2 className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            <p>Delete Entry</p>
-          </TooltipContent>
+          <TooltipContent><p>Delete Entry</p></TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>
   );
 
+  const actionsContentMobile = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <MoreVertical className="h-4 w-4" />
+          <span className="sr-only">Actions</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {(entry.note || entry.image) && (
+          <DropdownMenuItem onClick={() => onViewNote(entry)}>
+            <Eye className="mr-2 h-4 w-4" /> View Note/Image
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onClick={() => onEdit(entry)}>
+          <FilePenLine className="mr-2 h-4 w-4" /> Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onDelete(entry)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+          <Trash2 className="mr-2 h-4 w-4" /> Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   if (isMobileView) {
     return (
-      <div className="block p-4 mb-4 border rounded-lg shadow-md bg-card text-card-foreground">
-        {commonContent}
-        {actionsContent}
+      <div className={cn("flex items-start p-3 mb-2 border rounded-lg shadow-sm bg-card text-card-foreground", isSelected && "ring-2 ring-primary border-primary")}>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelectEntry(!!checked)}
+          aria-label={`Select row for ${entry.companyName}`}
+          className="mr-3 mt-1 shrink-0"
+          id={`checkbox-${entry.id}`}
+        />
+        <div className="flex-grow">
+          {commonContent}
+        </div>
+        <div className="ml-auto shrink-0">
+         {actionsContentMobile}
+        </div>
       </div>
     );
   }
 
   return (
-    <TableRow key={entry.id}>
-      <TableCell className="font-medium">{entry.companyName}</TableCell>
-      <TableCell>
+    <TableRow key={entry.id} data-state={isSelected ? "selected" : undefined}>
+      {/* Checkbox is now part of commonContent for TableCell structure */}
+      <TableCell className="font-medium hidden md:table-cell w-[200px]">{entry.companyName}</TableCell>
+      <TableCell className="hidden md:table-cell">
         <a
           href={entry.resumeLink}
           target="_blank"
@@ -155,34 +176,26 @@ export function ResumeTableRow({ entry, onEdit, onDelete, onValidateLink, isMobi
           {entry.resumeLink}
         </a>
       </TableCell>
-      <TableCell>{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
-      <TableCell>₹{entry.stipend.toLocaleString()}</TableCell>
-      <TableCell>
-        <div className="flex items-center space-x-2">
-          {getValidationStatusBadge()}
-          {entry.validationResult?.linkValidationTips && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <Info className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 z-50">
-                <div className="space-y-2">
-                  <h4 className="font-medium leading-none">Validation Tips</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {entry.validationResult.linkValidationTips}
-                  </p>
-                </div>
-              </PopoverContent>
-            </Popover>
-          )}
-        </div>
-      </TableCell>
-      <TableCell className="text-right">
-        {actionsContent}
+      <TableCell className="hidden md:table-cell w-[150px]">{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
+      <TableCell className="hidden md:table-cell w-[120px]">₹{entry.stipend.toLocaleString()}</TableCell>
+      
+      {/* Merging commonContent into the cells for desktop */}
+      {!isMobileView && (
+        <>
+            <TableCell className="px-2 py-2 w-[50px]">
+                <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => onSelectEntry(!!checked)}
+                aria-label={`Select row for ${entry.companyName}`}
+                />
+            </TableCell>
+            {/* The rest of the data cells are already defined above */}
+        </>
+      )}
+
+      <TableCell className="text-right hidden md:table-cell w-[180px]">
+        {actionsContentDesktop}
       </TableCell>
     </TableRow>
   );
 }
-
