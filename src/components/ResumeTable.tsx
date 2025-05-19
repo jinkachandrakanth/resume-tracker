@@ -4,9 +4,9 @@ import {
   Table,
   TableBody,
   TableCaption,
-  TableHead,
   TableHeader,
   TableRow,
+  TableHead, // Added TableHead for consistency, though it's hidden on mobile
 } from "@/components/ui/table";
 import type { ResumeEntry } from "@/types";
 import { ResumeTableRow } from "./ResumeTableRow";
@@ -28,10 +28,11 @@ export function ResumeTable({ entries, onEdit, onDelete, onValidateLink }: Resum
   }
 
   return (
-    <div className="mt-8 overflow-x-auto rounded-lg border shadow-sm">
-      <Table>
-        <TableCaption>A list of your tracked resume submissions.</TableCaption>
-        <TableHeader>
+    <div className="mt-8 md:overflow-x-auto md:rounded-lg md:border md:shadow-sm">
+      {/* For larger screens, use the table layout */}
+      <Table className="hidden md:table">
+        <TableCaption className="hidden md:table-caption">A list of your tracked resume submissions.</TableCaption>
+        <TableHeader className="hidden md:table-header-group">
           <TableRow>
             <TableHead className="w-[200px]">Company</TableHead>
             <TableHead>Resume Link</TableHead>
@@ -41,7 +42,7 @@ export function ResumeTable({ entries, onEdit, onDelete, onValidateLink }: Resum
             <TableHead className="text-right w-[150px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="hidden md:table-row-group">
           {entries.map((entry) => (
             <ResumeTableRow
               key={entry.id}
@@ -49,10 +50,26 @@ export function ResumeTable({ entries, onEdit, onDelete, onValidateLink }: Resum
               onEdit={onEdit}
               onDelete={onDelete}
               onValidateLink={onValidateLink}
+              isMobileView={false}
             />
           ))}
         </TableBody>
       </Table>
+
+      {/* For smaller screens, use the card-like layout */}
+      <div className="space-y-4 md:hidden">
+        {entries.map((entry) => (
+          <ResumeTableRow
+            key={entry.id}
+            entry={entry}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onValidateLink={onValidateLink}
+            isMobileView={true}
+          />
+        ))}
+         <p className="mt-4 text-sm text-center text-muted-foreground md:hidden">A list of your tracked resume submissions.</p>
+      </div>
     </div>
   );
 }

@@ -4,34 +4,35 @@
 
 @layer base {
   :root {
-    --background: 0 0% 7%; /* Very dark gray, almost black */
-    --foreground: 0 0% 93%; /* Light gray for text */
+    /* Light Theme (Default) */
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 7%; /* Very dark gray, almost black for text */
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 0 0% 96.1%; /* Light gray for muted backgrounds */
+    --muted-foreground: 0 0% 45.1%; /* Medium gray for muted text */
 
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 93%;
+    --popover: 0 0% 100%; /* White for popovers */
+    --popover-foreground: 0 0% 7%; /* Dark text for popovers */
 
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 93%;
+    --card: 0 0% 100%; /* White for cards */
+    --card-foreground: 0 0% 7%; /* Dark text for cards */
 
-    --border: 0 0% 20%;
-    --input: 0 0% 18%;
+    --border: 0 0% 89.8%; /* Light gray for borders */
+    --input: 0 0% 89.8%; /* Light gray for input backgrounds */
 
-    --primary: 202 79% 66%; /* Muted teal #63B3ED */
-    --primary-foreground: 210 60% 10%; /* Dark text on primary for contrast */
+    --primary: 202 79% 50%; /* A vibrant blue */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    --secondary: 202 50% 90%; /* Lighter teal for secondary elements */
-    --secondary-foreground: 202 60% 20%;
+    --secondary: 0 0% 94%; /* Lighter gray for secondary elements */
+    --secondary-foreground: 0 0% 15%; /* Darker gray text on secondary */
 
-    --accent: 260 78% 77%; /* Soft lavender #B794F4 */
-    --accent-foreground: 260 60% 10%; /* Dark text on accent for contrast */
+    --accent: 260 78% 65%; /* A pleasant violet */
+    --accent-foreground: 0 0% 100%; /* White text on accent */
 
-    --destructive: 0 70% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%; /* Standard red for destructive actions */
+    --destructive-foreground: 0 0% 98%; /* Light text on destructive */
 
-    --ring: 202 79% 60%; /* Based on primary */
+    --ring: 202 79% 50%; /* Based on primary */
     --radius: 0.5rem;
 
     --chart-1: 12 76% 61%;
@@ -40,46 +41,46 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     
-    --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 202 70% 60%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 20%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 202 70% 55%;
+    --sidebar-background: 0 0% 98%; /* Light background for sidebar */
+    --sidebar-foreground: 0 0% 15%; /* Dark text for sidebar */
+    --sidebar-primary: 202 70% 50%; /* Primary color for sidebar highlights */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text on sidebar primary */
+    --sidebar-accent: 0 0% 90%; /* Light accent for sidebar */
+    --sidebar-accent-foreground: 0 0% 15%; /* Dark text on sidebar accent */
+    --sidebar-border: 0 0% 85%; /* Border color for sidebar */
+    --sidebar-ring: 202 70% 45%; /* Ring color for sidebar */
   }
 
   .dark {
-    /* Dark theme specific overrides if needed, but base is now dark */
-    --background: 0 0% 4%; /* Even darker for explicit dark mode */
-    --foreground: 0 0% 95%;
+    /* Dark Theme */
+    --background: 0 0% 0%; /* Pure black */
+    --foreground: 0 0% 93%; /* Light gray for text */
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 10%; /* Darker gray for muted backgrounds */
+    --muted-foreground: 0 0% 60%; /* Lighter gray for muted text */
 
-    --popover: 0 0% 2%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 5%; /* Very dark gray for popovers */
+    --popover-foreground: 0 0% 93%; /* Light text for popovers */
 
-    --card: 0 0% 2%;
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 5%; /* Very dark gray for cards */
+    --card-foreground: 0 0% 93%; /* Light text for cards */
 
-    --border: 0 0% 15%;
-    --input: 0 0% 14%;
+    --border: 0 0% 20%; /* Medium dark gray for borders */
+    --input: 0 0% 18%; /* Dark gray for input backgrounds */
 
-    --primary: 202 70% 55%;
-    --primary-foreground: 202 30% 98%;
+    --primary: 202 79% 66%; /* Muted teal #63B3ED */
+    --primary-foreground: 210 60% 10%; /* Dark text on primary for contrast */
 
-    --secondary: 202 40% 22%;
-    --secondary-foreground: 202 30% 92%;
+    --secondary: 202 50% 30%; /* Darker teal for secondary elements */
+    --secondary-foreground: 202 60% 90%; /* Lighter text on dark secondary */
 
-    --accent: 260 70% 65%;
-    --accent-foreground: 260 30% 98%;
+    --accent: 260 78% 77%; /* Soft lavender #B794F4 */
+    --accent-foreground: 260 60% 10%; /* Dark text on accent for contrast */
 
-    --destructive: 0 60% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 70% 60%; /* Destructive color */
+    --destructive-foreground: 0 0% 98%; /* Light text on destructive */
 
-    --ring: 202 70% 50%;
+    --ring: 202 79% 60%; /* Based on primary */
 
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
@@ -87,14 +88,14 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    --sidebar-background: 240 5.9% 10%; /* Kept from original dark theme */
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 8%; /* Dark background for sidebar */
+    --sidebar-foreground: 0 0% 85%; /* Light text for sidebar */
+    --sidebar-primary: 202 70% 60%; /* Primary color for sidebar highlights */
+    --sidebar-primary-foreground: 0 0% 98%; /* Light text on sidebar primary */
+    --sidebar-accent: 0 0% 15%; /* Dark accent for sidebar */
+    --sidebar-accent-foreground: 0 0% 85%; /* Light text on sidebar accent */
+    --sidebar-border: 0 0% 25%; /* Border color for sidebar */
+    --sidebar-ring: 202 70% 55%; /* Ring color for sidebar */
   }
 }
 
@@ -104,5 +105,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }

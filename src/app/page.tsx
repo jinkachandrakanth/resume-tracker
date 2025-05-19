@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Sun, Moon } from "lucide-react";
 import { AppLogo } from "@/components/icons/AppLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,29 @@ export default function ResuTrackPage() {
   const [entryToDelete, setEntryToDelete] = React.useState<ResumeEntry | undefined>(undefined);
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
+  const [currentTheme, setCurrentTheme] = React.useState<'light' | 'dark'>('light');
+
+  // Effect to set initial theme state based on HTML class (set by layout.tsx)
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (document.documentElement.classList.contains('dark')) {
+        setCurrentTheme('dark');
+      } else {
+        setCurrentTheme('light');
+      }
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    setCurrentTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   // Load entries from localStorage on mount
   React.useEffect(() => {
@@ -27,7 +50,6 @@ export default function ResuTrackPage() {
     if (storedEntries) {
       try {
         const parsedEntries = JSON.parse(storedEntries) as ResumeEntry[];
-        // Ensure dates are Date objects
         const correctedEntries = parsedEntries.map(entry => ({
           ...entry,
           registrationDate: new Date(entry.registrationDate)
@@ -49,19 +71,18 @@ export default function ResuTrackPage() {
   const handleFormSubmit = (data: ResumeFormData) => {
     setIsLoading(true);
     if (editingEntry) {
-      // Edit existing entry
       setResumeEntries(
         resumeEntries.map((entry) =>
-          entry.id === editingEntry.id ? { ...editingEntry, ...data } : entry
+          entry.id === editingEntry.id ? { ...editingEntry, ...data, registrationDate: new Date(data.registrationDate) } : entry
         )
       );
       toast({ title: "Success!", description: "Resume entry updated." });
     } else {
-      // Add new entry
       const newEntry: ResumeEntry = {
         ...data,
         id: crypto.randomUUID(),
         validationStatus: 'pending',
+        registrationDate: new Date(data.registrationDate),
       };
       setResumeEntries([newEntry, ...resumeEntries]);
       toast({ title: "Success!", description: "New resume entry added." });
@@ -121,27 +142,32 @@ export default function ResuTrackPage() {
             <AppLogo className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold">ResuTrack</h1>
           </div>
-          <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) setEditingEntry(undefined); }}>
-            <DialogTrigger asChild>
-              <Button onClick={openAddNewForm}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Entry
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[625px]">
-              <DialogHeader>
-                <DialogTitle>{editingEntry ? "Edit" : "Add New"} Resume Entry</DialogTitle>
-                <DialogDescription>
-                  {editingEntry ? "Update the details of your resume submission." : "Fill in the details of your new resume submission."}
-                </DialogDescription>
-              </DialogHeader>
-              <ResumeForm
-                onSubmit={handleFormSubmit}
-                initialData={editingEntry}
-                isEditing={!!editingEntry}
-                isLoading={isLoading}
-              />
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-4">
+            <Button onClick={toggleTheme} variant="outline" size="icon" aria-label="Toggle theme">
+              {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
+            </Button>
+            <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) setEditingEntry(undefined); }}>
+              <DialogTrigger asChild>
+                <Button onClick={openAddNewForm}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add New Entry
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[625px]">
+                <DialogHeader>
+                  <DialogTitle>{editingEntry ? "Edit" : "Add New"} Resume Entry</DialogTitle>
+                  <DialogDescription>
+                    {editingEntry ? "Update the details of your resume submission." : "Fill in the details of your new resume submission."}
+                  </DialogDescription>
+                </DialogHeader>
+                <ResumeForm
+                  onSubmit={handleFormSubmit}
+                  initialData={editingEntry}
+                  isEditing={!!editingEntry}
+                  isLoading={isLoading}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </header>
 
