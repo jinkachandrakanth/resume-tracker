@@ -32,7 +32,10 @@ interface ResumeTableRowProps {
 const formatDateOrNA = (date: Date | string | null | undefined) => {
   if (!date) return "N/A";
   try {
-    return format(new Date(date), "MMM d, yyyy, h:mm a");
+    // Check if it's already a Date object, otherwise try to parse
+    const dateObj = date instanceof Date ? date : new Date(date);
+    if (isNaN(dateObj.getTime())) return "Invalid Date"; // Check if parsing was successful
+    return format(dateObj, "MMM d, yyyy, h:mm a");
   } catch (error) {
     return "Invalid Date";
   }
@@ -66,7 +69,7 @@ export function ResumeTableRow({
               rel="noopener noreferrer"
               className={cn(
                 "text-primary hover:underline truncate",
-                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block" 
+                isMobileView ? "min-w-0 flex-1" : "max-w-[200px] inline-block"
               )}
             >
               {entry.resumeLink}
@@ -75,12 +78,12 @@ export function ResumeTableRow({
 
           <div className={isMobileView ? "mb-1" : ""}>
             {isMobileView && <span className="font-semibold mr-2">Date Applied:</span>}
-            {format(new Date(entry.registrationDate), "MMM d, yyyy")}
+            {entry.registrationDate ? format(new Date(entry.registrationDate), "MMM d, yyyy") : 'N/A'}
           </div>
 
           <div className={isMobileView ? "mb-1" : ""}>
             {isMobileView && <span className="font-semibold mr-2">Stipend (INR):</span>}
-            ₹{entry.stipend.toLocaleString()}
+            ₹{entry.stipend?.toLocaleString() ?? '0'}
           </div>
 
           {isMobileView && (
@@ -159,7 +162,7 @@ export function ResumeTableRow({
 
   if (isMobileView) {
     return (
-      <div className={cn("flex items-start p-3 mb-2 border rounded-lg shadow-sm bg-card text-card-foreground", isSelected && "ring-2 ring-primary border-primary")}>
+      <div className={cn("flex items-start p-3 mb-2 border rounded-lg shadow-sm bg-card text-card-foreground overflow-hidden", isSelected && "ring-2 ring-primary border-primary")}>
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => onSelectEntry(!!checked)}
@@ -199,8 +202,8 @@ export function ResumeTableRow({
             {entry.resumeLink}
           </a>
         </TableCell>
-        <TableCell className="w-[150px]">{format(new Date(entry.registrationDate), "MMM d, yyyy")}</TableCell>
-        <TableCell className="w-[120px]">₹{entry.stipend.toLocaleString()}</TableCell>
+        <TableCell className="w-[150px]">{entry.registrationDate ? format(new Date(entry.registrationDate), "MMM d, yyyy") : 'N/A'}</TableCell>
+        <TableCell className="w-[120px]">₹{entry.stipend?.toLocaleString() ?? '0'}</TableCell>
         <TableCell className="w-[180px]">{formatDateOrNA(entry.examDate)}</TableCell>
         <TableCell className="w-[180px]">{formatDateOrNA(entry.interviewDate)}</TableCell>
         <TableCell className="text-right w-[180px]">
@@ -210,3 +213,5 @@ export function ResumeTableRow({
     </TableRow>
   );
 }
+
+    
