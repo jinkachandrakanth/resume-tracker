@@ -123,7 +123,6 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
             newDateTime.setHours(hours, minutes, 0, 0); // Set seconds and ms to 0
             field.onChange(newDateTime);
           }
-          // If no date selected, time input is disabled, so no specific handling needed here
         };
 
         return (
@@ -136,12 +135,12 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full sm:flex-1 justify-start text-left font-normal", // Use sm:flex-1 to allow button to grow
+                        "w-full sm:flex-1 justify-start text-left font-normal",
                         !selectedDateTime && "text-muted-foreground"
                       )}
                     >
                       {selectedDateTime ? (
-                        format(selectedDateTime, "PPP") // Button shows only date
+                        format(selectedDateTime, "PPP")
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -160,15 +159,15 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
               </Popover>
               <Input
                 type="time"
-                className="w-full sm:w-auto sm:max-w-[150px]" // Responsive width for time input
+                className="w-full sm:w-auto sm:max-w-[150px]"
                 value={selectedDateTime ? format(selectedDateTime, "HH:mm") : ""}
                 onChange={handleTimeChange}
-                disabled={!selectedDateTime} // Disable time input until a date is selected
+                disabled={!selectedDateTime}
               />
             </div>
             {selectedDateTime && (
               <p className="text-xs text-muted-foreground mt-1">
-                Selected: {format(selectedDateTime, "PPp")} {/* Shows Date, Time AM/PM */}
+                Selected: {format(selectedDateTime, "PPp")}
               </p>
             )}
             <FormMessage />
@@ -259,18 +258,44 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
           <FormField
             control={form.control}
             name="stipend"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Stipend (INR)</FormLabel>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <FormControl>
-                    <Input type="number" placeholder="e.g. 50000" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="pl-10" />
-                  </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const [isFocused, setIsFocused] = React.useState(false);
+              // If focused and RHF value is 0, display empty string in input.
+              // Otherwise, display RHF value (which will be '0' if value is 0 and not focused).
+              const displayValue = isFocused && field.value === 0 ? '' : field.value;
+
+              return (
+                <FormItem>
+                  <FormLabel>Stipend (INR)</FormLabel>
+                  <div className="relative">
+                    <IndianRupee className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 50000"
+                        ref={field.ref}
+                        name={field.name}
+                        value={displayValue}
+                        onFocus={() => {
+                          setIsFocused(true);
+                          // field.onFocus(); // Call RHF's onFocus if it was being passed by {...field}
+                        }}
+                        onBlur={(e) => {
+                          setIsFocused(false);
+                          field.onBlur(); // Call RHF's onBlur for touched state, validation etc.
+                        }}
+                        onChange={e => {
+                          // This logic ensures an empty input string becomes 0 in form state
+                          field.onChange(parseFloat(e.target.value) || 0);
+                        }}
+                        className="pl-10"
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -330,5 +355,3 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
     </Form>
   );
 }
-
-    
