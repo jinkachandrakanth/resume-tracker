@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react"; // Ensure React is imported
@@ -43,13 +44,13 @@ export function ResumeTableRow({ entry, onEdit, onDelete, onValidateLink, isMobi
         <span className={isMobileView ? "" : "font-medium"}>{entry.companyName}</span>
       </div>
 
-      <div className={isMobileView ? "mb-2" : ""}>
-        {isMobileView && <span className="font-semibold mr-2">Resume Link:</span>}
+      <div className={isMobileView ? "mb-2 flex items-center" : ""}>
+        {isMobileView && <span className="font-semibold mr-2 shrink-0">Resume Link:</span>}
         <a
           href={entry.resumeLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline truncate max-w-[200px] sm:max-w-[150px] md:max-w-[200px] inline-block break-all"
+          className={`text-primary hover:underline truncate break-all ${isMobileView ? "min-w-0" : "max-w-[200px] inline-block"}`}
         >
           {entry.resumeLink}
         </a>
@@ -184,3 +185,4 @@ export function ResumeTableRow({ entry, onEdit, onDelete, onValidateLink, isMobi
     </TableRow>
   );
 }
+
