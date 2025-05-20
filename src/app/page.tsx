@@ -173,7 +173,7 @@ export default function ResuTrackPage() {
     setSelectedEntryIds([]);
   };
 
-  const exportEntries = () => {
+  const exportEntries = async () => {
     if (resumeEntries.length === 0) {
       toast({
         variant: "destructive",
@@ -194,18 +194,27 @@ export default function ResuTrackPage() {
       'Note': entry.note || ''
     }));
 
-    const success = exportToExcel(exportData, `resume_entries_${new Date().toISOString().split('T')[0]}`);
+    try {
+      const success = await exportToExcel(exportData, `resume_entries_${new Date().toISOString().split('T')[0]}`);
 
-    if (success) {
-      toast({
-        title: "Export Successful",
-        description: "Resume entries exported as Excel file."
-      });
-    } else {
+      if (success) {
+        toast({
+          title: "Export Successful",
+          description: "Resume entries exported as Excel file."
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Export Failed",
+          description: "Failed to export resume entries. Please try again."
+        });
+      }
+    } catch (error) {
+      console.error('Export error:', error);
       toast({
         variant: "destructive",
         title: "Export Failed",
-        description: "Failed to export resume entries. Please try again."
+        description: "An error occurred while exporting. Please try again."
       });
     }
   };
