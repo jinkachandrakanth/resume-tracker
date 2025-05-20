@@ -1,5 +1,10 @@
-# Firebase Studio
+# ResuTrack
 
-This is a NextJS starter in Firebase Studio.
+A modern resume submission tracking application built with Next.js and TypeScript.
 
-To get started, take a look at src/app/page.tsx.
+## Features
+
+- Track resume submissions
+- Manage application status
+- Export data to Excel
+- Responsive design for all devices
