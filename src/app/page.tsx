@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { exportToExcel } from "@/lib/excel-export";
 
 export default function ResuTrackPage() {
   const [resumeEntries, setResumeEntries] = React.useState<ResumeEntry[]>([]);
@@ -193,20 +194,20 @@ export default function ResuTrackPage() {
       'Note': entry.note || ''
     }));
 
-    // Create worksheet
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const success = exportToExcel(exportData, `resume_entries_${new Date().toISOString().split('T')[0]}`);
 
-    // Create workbook and add worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Resume Entries');
-
-    // Generate Excel file
-    XLSX.writeFile(workbook, `resume_entries_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-    toast({
-      title: "Export Successful",
-      description: "Resume entries exported as Excel file."
-    });
+    if (success) {
+      toast({
+        title: "Export Successful",
+        description: "Resume entries exported as Excel file."
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Export Failed",
+        description: "Failed to export resume entries. Please try again."
+      });
+    }
   };
 
   return (
@@ -221,7 +222,7 @@ export default function ResuTrackPage() {
             {/* Desktop View */}
             <div className="hidden md:flex items-center gap-4">
               <Button onClick={toggleTheme} variant="outline" size="icon" aria-label="Toggle theme">
- {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
+                {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
               </Button>
               <Button onClick={exportEntries} variant="outline" className="mr-2">
                 Export to Excel
