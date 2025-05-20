@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -6,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, IndianRupee, Briefcase, Link as LinkIcon, Paperclip, Image as ImageIcon, X } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "@/components/ui/use-toast";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -74,10 +74,50 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log("File selected:", file); // Debugging log
+
     if (file) {
+      // Validate file type and size
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      console.log("File type:", file.type); // Debugging log
+      console.log("File size:", file.size); // Debugging log
+
+      if (!validTypes.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid File Type",
+          description: `Please upload a valid image. Received type: ${file.type}`
+        });
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast({
+          variant: "destructive",
+          title: "File Too Large",
+          description: `Image must be smaller than 5MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`
+        });
+        return;
+      }
+
       const reader = new FileReader();
+      reader.onloadstart = () => {
+        console.log("File reading started"); // Debugging log
+      };
+      reader.onerror = (error) => {
+        console.error("File reading error:", error); // Error logging
+        toast({
+          variant: "destructive",
+          title: "Image Upload Error",
+          description: "Failed to read the image file"
+        });
+      };
       reader.onloadend = () => {
+        console.log("File reading completed"); // Debugging log
         const dataUri = reader.result as string;
+        console.log("Data URI length:", dataUri.length); // Debugging log
         form.setValue("image", dataUri);
         setImagePreview(dataUri);
       };
@@ -89,7 +129,7 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
     form.setValue("image", "");
     setImagePreview(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = ""; // Clear the file input
     }
   };
 
@@ -203,7 +243,7 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
           render={({ field }) => (
             <FormItem>
               <FormLabel>Resume Link</FormLabel>
-               <div className="relative">
+              <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <FormControl>
                   <Input type="url" placeholder="https://example.com/resume.pdf" {...field} className="pl-10" />
@@ -299,57 +339,82 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
           />
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {renderOptionalDateTimePicker("examDate", "Exam Date & Time")}
-          {renderOptionalDateTimePicker("interviewDate", "Interview Date & Time")}
+          {renderOptionalDateTimePicker("examDate", "Exam Date")}
+          {renderOptionalDateTimePicker("interviewDate", "Interview Date")}
         </div>
         <FormField
           control={form.control}
-          name="note"
+          name="image"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Note</FormLabel>
+              <FormLabel>Upload Image (Optional)</FormLabel>
               <FormControl>
-                <Textarea placeholder="Add any relevant notes here..." {...field} rows={4} />
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      ref={fileInputRef}
+                      onChange={handleImageChange}
+                      id="image-upload"
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 cursor-pointer"
+                    >
+                      <ImageIcon className="mr-2 h-5 w-5" />
+                      Choose Image
+                    </label>
+
+                    {imagePreview && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={removeImage}
+                      >
+                        <X className="mr-2 h-4 w-4" /> Remove
+                      </Button>
+                    )}
+                  </div>
+
+                  {imagePreview && (
+                    <div className="mt-4 max-w-xs">
+                      <div className="relative border-2 border-dashed rounded-lg p-2">
+                        <img
+                          src={imagePreview}
+                          alt="Image Preview"
+                          className="max-w-full max-h-[300px] object-contain rounded-md mx-auto"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <FormItem>
-          <FormLabel>Attach Image (Optional)</FormLabel>
-          <div className="flex items-center gap-4">
-            <FormControl>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                id="imageUpload"
-                ref={fileInputRef}
-              />
-            </FormControl>
-            <Button type="button" variant="outline" onClick={() => document.getElementById('imageUpload')?.click()}>
-              <Paperclip className="mr-2 h-4 w-4" /> {imagePreview ? "Change Image" : "Upload Image"}
-            </Button>
-          </div>
-          {imagePreview && (
-            <div className="mt-4 relative w-48 h-32 border rounded-md overflow-hidden group">
-               <img src={imagePreview} alt="Preview" className="object-cover w-full h-full" />
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={removeImage}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+        <FormField
+          control={form.control}
+          name="note"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Additional Notes (Optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Add any additional notes about the resume submission"
+                  className="resize-y"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-          <FormMessage>{form.formState.errors.image?.message}</FormMessage>
-        </FormItem>
-        <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
-          {isLoading ? "Saving..." : (isEditing ? "Save Changes" : "Add Entry")}
+        />
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Submitting..." : (isEditing ? "Update Entry" : "Add Entry")}
         </Button>
       </form>
     </Form>

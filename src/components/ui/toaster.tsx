@@ -1,35 +1,22 @@
 "use client"
 
-import { useToast } from "@/hooks/use-toast"
-import {
-  Toast,
-  ToastClose,
-  ToastDescription,
-  ToastProvider,
-  ToastTitle,
-  ToastViewport,
-} from "@/components/ui/toast"
+import * as React from "react"
+import { useToast } from "./use-toast"
 
 export function Toaster() {
-  const { toasts } = useToast()
+  const { toast } = useToast()
 
   return (
-    <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
-        return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
-              )}
-            </div>
-            {action}
-            <ToastClose />
-          </Toast>
-        )
-      })}
-      <ToastViewport />
-    </ToastProvider>
+    <div
+      className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 
+        ${toast
+          ? (toast.variant === 'destructive'
+            ? 'bg-red-500 text-white opacity-100'
+            : 'bg-green-500 text-white opacity-100')
+          : 'opacity-0 pointer-events-none'}`}
+    >
+      {toast?.title && <div className="font-bold">{toast.title}</div>}
+      {toast?.description && <div className="text-sm">{toast.description}</div>}
+    </div>
   )
 }

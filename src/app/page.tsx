@@ -1,8 +1,7 @@
-
 "use client";
 
 import * as React from "react";
-import { PlusCircle, Sun, Moon, Trash2, Eye, Info } from "lucide-react";
+import { PlusCircle, Sun, Moon, Trash2, Eye, Info, Menu, X, FileSpreadsheet } from "lucide-react";
 import Image from 'next/image';
 import { AppLogo } from "@/components/icons/AppLogo";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,13 @@ import { ResumeTable } from "@/components/ResumeTable";
 import type { ResumeEntry, ResumeFormData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox"; // For bulk delete
+import * as XLSX from 'xlsx';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function ResuTrackPage() {
   const [resumeEntries, setResumeEntries] = React.useState<ResumeEntry[]>([]);
@@ -25,6 +31,7 @@ export default function ResuTrackPage() {
   const [currentTheme, setCurrentTheme] = React.useState<'light' | 'dark'>('light');
   const [noteToView, setNoteToView] = React.useState<ResumeEntry | null>(null);
   const [selectedEntryIds, setSelectedEntryIds] = React.useState<string[]>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -124,10 +131,18 @@ export default function ResuTrackPage() {
     setNoteToView(entry);
   };
 
-  const openAddNewForm = () => {
+  const openAddNewForm = React.useCallback(() => {
     setEditingEntry(undefined);
     setIsFormOpen(true);
-  };
+  }, []);
+
+  const handleDialogOpenChange = React.useCallback((open: boolean) => {
+    setIsFormOpen(open);
+    if (!open) {
+      setEditingEntry(undefined);
+      setIsLoading(false);
+    }
+  }, []);
 
   const handleSelectEntry = (entryId: string, checked: boolean) => {
     setSelectedEntryIds(prevSelectedIds =>
@@ -149,12 +164,49 @@ export default function ResuTrackPage() {
     setResumeEntries(prevEntries =>
       prevEntries.filter(entry => !selectedEntryIds.includes(entry.id))
     );
-    toast({ 
-      variant: "destructive", 
-      title: "Deleted Selected", 
-      description: `${selectedEntryIds.length} resume entr${selectedEntryIds.length === 1 ? 'y' : 'ies'} removed.` 
+    toast({
+      variant: "destructive",
+      title: "Deleted Selected",
+      description: `${selectedEntryIds.length} resume entr${selectedEntryIds.length === 1 ? 'y' : 'ies'} removed.`
     });
     setSelectedEntryIds([]);
+  };
+
+  const exportEntries = () => {
+    if (resumeEntries.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Export Failed",
+        description: "No entries to export."
+      });
+      return;
+    }
+
+    // Transform entries for Excel export
+    const exportData = resumeEntries.map(entry => ({
+      'Company Name': entry.companyName,
+      'Resume Link': entry.resumeLink,
+      'Date Applied': entry.registrationDate ? entry.registrationDate.toLocaleDateString() : 'N/A',
+      'Stipend (INR)': entry.stipend || 0,
+      'Exam Date': entry.examDate ? entry.examDate.toLocaleDateString() : 'N/A',
+      'Interview Date': entry.interviewDate ? entry.interviewDate.toLocaleDateString() : 'N/A',
+      'Note': entry.note || ''
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Create workbook and add worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Resume Entries');
+
+    // Generate Excel file
+    XLSX.writeFile(workbook, `resume_entries_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    toast({
+      title: "Export Successful",
+      description: "Resume entries exported as Excel file."
+    });
   };
 
   return (
@@ -166,30 +218,95 @@ export default function ResuTrackPage() {
             <h1 className="text-2xl font-bold">ResuTrack</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Button onClick={toggleTheme} variant="outline" size="icon" aria-label="Toggle theme">
-              {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
-            </Button>
-            <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) setEditingEntry(undefined); }}>
-              <DialogTrigger asChild>
-                <Button onClick={openAddNewForm}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add New Entry
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[625px] max-h-[85vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingEntry ? "Edit" : "Add New"} Resume Entry</DialogTitle>
-                  <DialogDescription>
-                    {editingEntry ? "Update the details of your resume submission." : "Fill in the details of your new resume submission."}
-                  </DialogDescription>
-                </DialogHeader>
-                <ResumeForm
-                  onSubmit={handleFormSubmit}
-                  initialData={editingEntry}
-                  isEditing={!!editingEntry}
-                  isLoading={isLoading}
-                />
-              </DialogContent>
-            </Dialog>
+            {/* Desktop View */}
+            <div className="hidden md:flex items-center gap-4">
+              <Button onClick={toggleTheme} variant="outline" size="icon" aria-label="Toggle theme">
+                {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
+              </Button>
+              <Button onClick={exportEntries} variant="outline" className="mr-2">
+                Export to Excel
+              </Button>
+              <Dialog
+                open={isFormOpen}
+                onOpenChange={handleDialogOpenChange}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    onClick={() => openAddNewForm()}
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add New Entry
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[625px] max-h-[85vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>{editingEntry ? "Edit" : "Add New"} Resume Entry</DialogTitle>
+                    <DialogDescription>
+                      {editingEntry ? "Update the details of your resume submission." : "Fill in the details of your new resume submission."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ResumeForm
+                    key={editingEntry ? editingEntry.id : 'new'}
+                    onSubmit={handleFormSubmit}
+                    initialData={editingEntry}
+                    isEditing={!!editingEntry}
+                    isLoading={isLoading}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden flex items-center gap-2">
+              <Dialog
+                open={isFormOpen}
+                onOpenChange={handleDialogOpenChange}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    onClick={() => openAddNewForm()}
+                    size="icon"
+                    variant="outline"
+                    className="mr-2"
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[625px] max-h-[85vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>{editingEntry ? "Edit" : "Add New"} Resume Entry</DialogTitle>
+                    <DialogDescription>
+                      {editingEntry ? "Update the details of your resume submission." : "Fill in the details of your new resume submission."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ResumeForm
+                    key={editingEntry ? editingEntry.id : 'new-mobile'}
+                    onSubmit={handleFormSubmit}
+                    initialData={editingEntry}
+                    isEditing={!!editingEntry}
+                    isLoading={isLoading}
+                  />
+                </DialogContent>
+              </Dialog>
+
+              <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={toggleTheme}>
+                    {currentTheme === 'light' ?
+                      <><Moon className="mr-2 h-4 w-4" /> Dark Mode</> :
+                      <><Sun className="mr-2 h-4 w-4" /> Light Mode</>
+                    }
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportEntries}>
+                    <FileSpreadsheet className="mr-2 h-4 w-4" /> Export to Excel
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>
