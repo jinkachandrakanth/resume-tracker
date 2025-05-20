@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,6 +71,9 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
   }, [initialData, form]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.stopPropagation(); // Stop event propagation
+    console.log('handleImageChange triggered');
+    console.log('handleImageChange entered');
     const file = event.target.files?.[0];
     console.log("File selected:", file); // Debugging log
 
@@ -83,6 +84,7 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
 
       console.log("File type:", file.type); // Debugging log
       console.log("File size:", file.size); // Debugging log
+      console.log('File found:', file.name);
 
       if (!validTypes.includes(file.type)) {
         toast({
@@ -104,6 +106,7 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
 
       const reader = new FileReader();
       reader.onloadstart = () => {
+        console.log('FileReader started');
         console.log("File reading started"); // Debugging log
       };
       reader.onerror = (error) => {
@@ -115,11 +118,14 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
         });
       };
       reader.onloadend = () => {
+        console.log('FileReader finished');
         console.log("File reading completed"); // Debugging log
         const dataUri = reader.result as string;
         console.log("Data URI length:", dataUri.length); // Debugging log
         form.setValue("image", dataUri);
+        console.log('imagePreview after setting:', dataUri ? 'set' : 'null');
         setImagePreview(dataUri);
+        event.target.value = ''; // Clear the file input after processing
       };
       reader.readAsDataURL(file);
     }
@@ -359,14 +365,18 @@ export function ResumeForm({ onSubmit, initialData, isEditing = false, isLoading
                       id="image-upload"
                       className="hidden"
                     />
+                    {/* Corrected Label Structure */}
                     <label
-                      htmlFor="image-upload"
+                      onClick={() => fileInputRef.current?.click()}
+                      onClick={(event) => {
+                        event.preventDefault(); // Prevent default label behavior
+                        fileInputRef.current?.click();
+                      }}                      htmlFor="image-upload"
                       className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 cursor-pointer"
                     >
                       <ImageIcon className="mr-2 h-5 w-5" />
                       Choose Image
                     </label>
-
                     {imagePreview && (
                       <Button
                         type="button"

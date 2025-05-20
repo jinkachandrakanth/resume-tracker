@@ -221,7 +221,7 @@ export default function ResuTrackPage() {
             {/* Desktop View */}
             <div className="hidden md:flex items-center gap-4">
               <Button onClick={toggleTheme} variant="outline" size="icon" aria-label="Toggle theme">
-                {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
+ {currentTheme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
               </Button>
               <Button onClick={exportEntries} variant="outline" className="mr-2">
                 Export to Excel
@@ -231,11 +231,7 @@ export default function ResuTrackPage() {
                 onOpenChange={handleDialogOpenChange}
               >
                 <DialogTrigger asChild>
-                  <Button
-                    onClick={() => openAddNewForm()}
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add New Entry
-                  </Button>
+                  <Button onClick={() => openAddNewForm()}><PlusCircle className="mr-2 h-4 w-4" /> Add New Entry</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[625px] max-h-[85vh] overflow-y-auto">
                   <DialogHeader>
@@ -245,7 +241,7 @@ export default function ResuTrackPage() {
                     </DialogDescription>
                   </DialogHeader>
                   <ResumeForm
-                    key={editingEntry ? editingEntry.id : 'new'}
+                    key={editingEntry ? editingEntry.id : 'new-desktop'} // Unique key for form reset
                     onSubmit={handleFormSubmit}
                     initialData={editingEntry}
                     isEditing={!!editingEntry}
